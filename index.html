@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Voice System</title>
+
+<style>
+body {
+  margin:0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg,#0f2027,#2c5364);
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.container{
+  width:95%;
+  max-width:430px;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(20px);
+  border-radius:25px;
+  padding:20px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.5);
+}
+
+h1{
+  text-align:center;
+  font-size:22px;
+  margin-bottom:10px;
+}
+
+textarea{
+  width:100%;
+  height:120px;
+  border-radius:15px;
+  border:none;
+  padding:10px;
+  font-size:15px;
+  outline:none;
+  resize:none;
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-top:15px;
+}
+
+button{
+  padding:12px;
+  border:none;
+  border-radius:15px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+button:active{transform:scale(0.95)}
+
+.mic{background:#ff5252}
+.stop{background:#ff9800}
+.speak{background:#4caf50}
+.clear{background:#607d8b}
+
+.extra{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.copy{background:#2196f3}
+.download{background:#9c27b0}
+
+.status{
+  margin-top:10px;
+  text-align:center;
+  font-size:13px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎤 Smart Voice System</h1>
+
+  <textarea id="text" placeholder="Speak or type..."></textarea>
+
+  <div class="controls">
+    <button class="mic" onclick="startListening()">🎙 Start</button>
+    <button class="stop" onclick="stopListening()">⏹ Stop</button>
+    <button class="speak" onclick="speakText()">🔊 Speak</button>
+    <button class="clear" onclick="clearText()">❌ Clear</button>
+  </div>
+
+  <div class="extra">
+    <button class="copy" onclick="copyText()">📋 Copy</button>
+    <button class="download" onclick="downloadText()">⬇ Download</button>
+  </div>
+
+  <div class="status" id="status">Ready</div>
+</div>
+
+<script>
+let recognition;
+let listening=false;
+
+function startListening(){
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if(!SpeechRecognition){
+    document.getElementById('status').innerText="Speech not supported";
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.continuous=true;
+  recognition.interimResults=true;
+  recognition.lang='en-US';
+
+  recognition.start();
+  listening=true;
+  document.getElementById('status').innerText="Listening...";
+
+  recognition.onresult=function(e){
+    let text='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      text+=e.results[i][0].transcript;
+    }
+    document.getElementById('text').value=text;
+  }
+
+  recognition.onerror=function(){
+    document.getElementById('status').innerText="Error occurred";
+  }
+}
+
+function stopListening(){
+  if(recognition && listening){
+    recognition.stop();
+    listening=false;
+    document.getElementById('status').innerText="Stopped";
+  }
+}
+
+function speakText(){
+  const text=document.getElementById('text').value;
+  if(!text) return;
+
+  const speech=new SpeechSynthesisUtterance(text);
+  speech.lang='en-US';
+  speech.rate=1;
+  speech.pitch=1;
+
+  window.speechSynthesis.speak(speech);
+}
+
+function clearText(){
+  document.getElementById('text').value='';
+}
+
+function copyText(){
+  const t=document.getElementById('text');
+  t.select();
+  document.execCommand('copy');
+  document.getElementById('status').innerText="Copied";
+}
+
+function downloadText(){
+  const text=document.getElementById('text').value;
+  const blob=new Blob([text],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='speech.txt';
+  a.click();
+}
+</script>
+
+</body>
+</html>
