@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tap Speed Challenge</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:linear-gradient(135deg,#ff512f,#dd2476);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  color:white;
+}
+
+.container{
+  text-align:center;
+  width:90%;
+  max-width:400px;
+}
+
+h1{margin-bottom:10px}
+
+#gameBox{
+  width:100%;
+  height:250px;
+  background:white;
+  border-radius:20px;
+  position:relative;
+  overflow:hidden;
+}
+
+.target{
+  width:50px;
+  height:50px;
+  background:#2196f3;
+  border-radius:50%;
+  position:absolute;
+  cursor:pointer;
+}
+
+.info{
+  margin-top:15px;
+}
+
+button{
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#00e676;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>⚡ Tap Speed Challenge</h1>
+  <p>Tap the circle as fast as you can!</p>
+
+  <div id="gameBox"></div>
+
+  <button onclick="startGame()">Start Game</button>
+
+  <div class="info">
+    <p id="score">Score: 0</p>
+    <p id="time">Time: 10</p>
+    <p id="status">Ready</p>
+  </div>
+</div>
+
+<script>
+let score=0;
+let time=10;
+let timer;
+
+function startGame(){
+  score=0;
+  time=10;
+  document.getElementById('score').innerText="Score: 0";
+  document.getElementById('time').innerText="Time: 10";
+  document.getElementById('status').innerText="Go!";
+
+  spawnTarget();
+
+  timer=setInterval(()=>{
+    time--;
+    document.getElementById('time').innerText="Time: "+time;
+
+    if(time<=0){
+      clearInterval(timer);
+      document.getElementById('status').innerText="Game Over";
+      document.getElementById('gameBox').innerHTML="";
+    }
+  },1000);
+}
+
+function spawnTarget(){
+  const box=document.getElementById('gameBox');
+  box.innerHTML="";
+
+  const target=document.createElement('div');
+  target.classList.add('target');
+
+  const x=Math.random()*(box.clientWidth-50);
+  const y=Math.random()*(box.clientHeight-50);
+
+  target.style.left=x+"px";
+  target.style.top=y+"px";
+
+  target.onclick=function(){
+    score++;
+    document.getElementById('score').innerText="Score: "+score;
+    spawnTarget();
+  }
+
+  box.appendChild(target);
+}
+</script>
+
+</body>
+</html>
