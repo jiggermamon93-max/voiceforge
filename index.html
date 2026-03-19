@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultra Voice Assistant</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg,#141e30,#243b55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+}
+
+.app {
+  width: 95%;
+  max-width: 430px;
+  background: rgba(255,255,255,0.07);
+  backdrop-filter: blur(25px);
+  border-radius: 30px;
+  padding: 20px;
+  box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.header h1 {
+  font-size: 22px;
+}
+
+textarea {
+  width: 100%;
+  height: 130px;
+  border-radius: 20px;
+  border: none;
+  padding: 12px;
+  font-size: 15px;
+  outline: none;
+  resize: none;
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+button {
+  padding: 13px;
+  border-radius: 20px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+button:active {
+  transform: scale(0.92);
+}
+
+.start { background:#ff3d00; }
+.stop { background:#ffab00; }
+.speak { background:#00e5ff; }
+.clear { background:#616161; }
+
+.status {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.visualizer {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.bar {
+  width: 4px;
+  height: 10px;
+  background: #00e5ff;
+  animation: bounce 1s infinite ease-in-out;
+}
+
+.bar:nth-child(2){animation-delay:0.1s}
+.bar:nth-child(3){animation-delay:0.2s}
+.bar:nth-child(4){animation-delay:0.3s}
+.bar:nth-child(5){animation-delay:0.4s}
+
+@keyframes bounce {
+  0%,100%{height:5px}
+  50%{height:20px}
+}
+
+.hidden { display:none; }
+
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>🤖 Ultra Voice Assistant</h1>
+  </div>
+
+  <textarea id="text" placeholder="Speak or type here..."></textarea>
+
+  <div class="buttons">
+    <button class="start" onclick="startListening()">🎙 Start</button>
+    <button class="stop" onclick="stopListening()">⏹ Stop</button>
+    <button class="speak" onclick="speakText()">🔊 Speak</button>
+    <button class="clear" onclick="clearText()">❌ Clear</button>
+  </div>
+
+  <div class="visualizer hidden" id="viz">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </div>
+
+  <div class="status" id="status">Ready</div>
+</div>
+
+<script>
+let recognition;
+let listening = false;
+
+function startListening(){
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if(!SpeechRecognition){
+    document.getElementById('status').innerText = "Not supported";
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  recognition.start();
+  listening = true;
+
+  document.getElementById('status').innerText = "Listening...";
+  document.getElementById('viz').classList.remove('hidden');
+
+  recognition.onresult = function(e){
+    let text = '';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      text += e.results[i][0].transcript;
+    }
+    document.getElementById('text').value = text;
+  }
+
+  recognition.onerror = function(){
+    document.getElementById('status').innerText = "Error";
+  }
+}
+
+function stopListening(){
+  if(recognition && listening){
+    recognition.stop();
+    listening = false;
+    document.getElementById('status').innerText = "Stopped";
+    document.getElementById('viz').classList.add('hidden');
+  }
+}
+
+function speakText(){
+  const text = document.getElementById('text').value;
+  if(!text) return;
+
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.rate = 1;
+  speech.pitch = 1;
+  speech.lang = 'en-US';
+
+  window.speechSynthesis.speak(speech);
+}
+
+function clearText(){
+  document.getElementById('text').value = '';
+}
+</script>
+
+</body>
+</html>
