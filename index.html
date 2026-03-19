@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voice AI Pro</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  width: 95%;
+  max-width: 420px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  border-radius: 25px;
+  padding: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  text-align: center;
+}
+
+h1 {
+  font-size: 22px;
+  margin-bottom: 15px;
+}
+
+textarea {
+  width: 100%;
+  height: 140px;
+  border-radius: 15px;
+  border: none;
+  padding: 12px;
+  font-size: 16px;
+  resize: none;
+  outline: none;
+}
+
+.controls {
+  margin-top: 15px;
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 10px;
+}
+
+button {
+  padding: 12px;
+  border-radius: 15px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+.mic { background:#ff1744; }
+.stop { background:#ff9100; }
+.speak { background:#00e676; }
+.clear { background:#455a64; }
+
+.status {
+  margin-top: 10px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.wave {
+  margin-top: 10px;
+  height: 5px;
+  background: linear-gradient(90deg,#00e676,#2979ff);
+  animation: wave 1s infinite;
+  display: none;
+}
+
+@keyframes wave {
+  0% {transform: scaleX(0.3);} 
+  50% {transform: scaleX(1);} 
+  100% {transform: scaleX(0.3);} 
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎤 Voice AI Pro</h1>
+
+  <textarea id="text" placeholder="Speak or type..."></textarea>
+
+  <div class="controls">
+    <button class="mic" onclick="startListening()">🎙 Start</button>
+    <button class="stop" onclick="stopListening()">⏹ Stop</button>
+    <button class="speak" onclick="speakText()">🔊 Speak</button>
+    <button class="clear" onclick="clearText()">❌ Clear</button>
+  </div>
+
+  <div class="wave" id="wave"></div>
+  <div class="status" id="status">Ready</div>
+</div>
+
+<script>
+let recognition;
+let isListening = false;
+
+function startListening() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    document.getElementById('status').innerText = "Speech not supported";
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognition.start();
+  isListening = true;
+
+  document.getElementById('status').innerText = "Listening...";
+  document.getElementById('wave').style.display = "block";
+
+  recognition.onresult = function(event) {
+    let transcript = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript;
+    }
+    document.getElementById('text').value = transcript;
+  };
+
+  recognition.onerror = function() {
+    document.getElementById('status').innerText = "Mic error";
+  };
+}
+
+function stopListening() {
+  if (recognition && isListening) {
+    recognition.stop();
+    isListening = false;
+    document.getElementById('status').innerText = "Stopped";
+    document.getElementById('wave').style.display = "none";
+  }
+}
+
+function speakText() {
+  const text = document.getElementById('text').value;
+  if (!text) return;
+
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = 'en-US';
+  speech.rate = 1;
+  speech.pitch = 1;
+
+  window.speechSynthesis.speak(speech);
+}
+
+function clearText() {
+  document.getElementById('text').value = '';
+}
+</script>
+
+</body>
+</html>
