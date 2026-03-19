@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Speech ↔ Text Pro</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    .app {
+      width: 95%;
+      max-width: 420px;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(15px);
+      border-radius: 25px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 22px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 140px;
+      border-radius: 15px;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      outline: none;
+      resize: none;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    button {
+      padding: 12px;
+      border-radius: 15px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: bold;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    .mic { background: #ff4d6d; color: white; }
+    .speak { background: #00c853; color: white; }
+    .clear { background: #455a64; color: white; }
+    .copy { background: #2979ff; color: white; }
+
+    .status {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    .note {
+      margin-top: 10px;
+      font-size: 11px;
+      text-align: center;
+      opacity: 0.6;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <h1>🎤 Speech ↔ Text Pro</h1>
+
+  <textarea id="text" placeholder="Tap mic or type..."></textarea>
+
+  <div class="buttons">
+    <button class="mic" onclick="startListening()">🎙 Speak</button>
+    <button class="speak" onclick="speakText()">🔊 Read</button>
+    <button class="clear" onclick="clearText()">❌ Clear</button>
+    <button class="copy" onclick="copyText()">📋 Copy</button>
+  </div>
+
+  <div class="status" id="status">Status: Ready</div>
+  <div class="note">Note: Mic may not work in WebViewer APK. Works best in Chrome.</div>
+</div>
+
+<script>
+let recognition;
+
+function startListening() {
+  try {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      document.getElementById('status').innerText = "Speech not supported";
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.start();
+    document.getElementById('status').innerText = "Listening...";
+
+    recognition.onresult = function(event) {
+      const text = event.results[0][0].transcript;
+      document.getElementById('text').value += text + " ";
+      document.getElementById('status').innerText = "Done";
+    };
+
+    recognition.onerror = function() {
+      document.getElementById('status').innerText = "Mic error";
+    };
+
+  } catch (e) {
+    document.getElementById('status').innerText = "Not supported in APK";
+  }
+}
+
+function speakText() {
+  const text = document.getElementById('text').value;
+  if (!text) return;
+
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = 'en-US';
+  window.speechSynthesis.speak(speech);
+}
+
+function clearText() {
+  document.getElementById('text').value = "";
+}
+
+function copyText() {
+  const textarea = document.getElementById('text');
+  textarea.select();
+  document.execCommand("copy");
+  document.getElementById('status').innerText = "Copied!";
+}
+</script>
+
+</body>
+</html>
